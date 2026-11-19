@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 
 export default function Verify() {
   const { t } = useI18n();
-  const { phone } = useLocalSearchParams<{ phone: string }>();
+  const { phone, channel = 'sms' } = useLocalSearchParams<{ phone: string; channel?: 'sms' | 'whatsapp' }>();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -27,7 +27,7 @@ export default function Verify() {
 
   async function resend() {
     setResent(false);
-    const { error: err } = await supabase.auth.signInWithOtp({ phone });
+    const { error: err } = await supabase.auth.signInWithOtp({ phone, options: { channel } });
     if (err) setError(err.message); else setResent(true);
   }
 
@@ -38,7 +38,7 @@ export default function Verify() {
       <Card>
         <Field label={t('codeLabel')} required value={code} onChangeText={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))}
           keyboardType="number-pad" autoComplete="one-time-code" textContentType="oneTimeCode" maxLength={6}
-          help={t('verifyHelp', { phone: formatPkMobile(phone) })} error={error} onSubmitEditing={verify} testID="code-input" />
+          help={t(channel === 'whatsapp' ? 'verifyHelpWa' : 'verifyHelp', { phone: formatPkMobile(phone) })} error={error} onSubmitEditing={verify} testID="code-input" />
         <Button title={t('verify')} onPress={verify} loading={busy} testID="verify" />
         <Button title={resent ? '✓ ' + t('resend') : t('resend')} variant="ghost" onPress={resend} />
         <Button title={t('changeNumber')} variant="ghost" onPress={() => router.replace('/sign-in')} />

@@ -6,6 +6,11 @@ import { AppState, Platform } from 'react-native';
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const key = process.env.EXPO_PUBLIC_SUPABASE_KEY ?? '';
 
+// Which channels the backend can deliver login codes on, e.g. "whatsapp,sms" (first = default).
+export type OtpChannel = 'sms' | 'whatsapp';
+export const otpChannels: OtpChannel[] = String(process.env.EXPO_PUBLIC_OTP_CHANNELS ?? 'sms')
+  .split(',').map((c: string) => c.trim()).filter((c: string): c is OtpChannel => c === 'sms' || c === 'whatsapp');
+
 export const isBackendConfigured = url.startsWith('https://') && key.length > 20;
 
 export const supabase = createClient(isBackendConfigured ? url : 'https://not-configured.invalid', key || 'missing', {

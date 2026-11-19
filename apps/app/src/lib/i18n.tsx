@@ -15,9 +15,10 @@ const en = {
 
   // auth
   signInTitle: 'Sign in with your mobile number',
-  signInHelp: 'We will send a 6-digit code by SMS. No password needed.',
+  signInHelp: 'We will send you a 6-digit code. No password needed.',
   phoneLabel: 'Mobile number', phonePlaceholder: '0300 1234567',
-  sendCode: 'Send code', invalidPhone: 'Please enter a valid Pakistani mobile number (03XX XXXXXXX).',
+  sendCode: 'Send code by SMS', sendWhatsApp: 'Send code on WhatsApp', sendSmsInstead: 'No WhatsApp? Send by SMS',
+  verifyHelpWa: 'We sent a 6-digit code on WhatsApp to {phone}.', invalidPhone: 'Please enter a valid Pakistani mobile number (03XX XXXXXXX).',
   verifyTitle: 'Enter the code', verifyHelp: 'We sent a 6-digit code to {phone}.',
   codeLabel: 'Verification code', verify: 'Verify', resend: 'Send a new code', changeNumber: 'Change number',
   invalidCode: 'That code is not correct or has expired.',
@@ -98,9 +99,10 @@ const ur: Dict = {
   language: 'English',
 
   signInTitle: 'اپنے موبائل نمبر سے سائن اِن کریں',
-  signInHelp: 'ہم SMS کے ذریعے 6 ہندسوں کا کوڈ بھیجیں گے۔ پاس ورڈ کی ضرورت نہیں۔',
+  signInHelp: 'ہم آپ کو 6 ہندسوں کا کوڈ بھیجیں گے۔ پاس ورڈ کی ضرورت نہیں۔',
   phoneLabel: 'موبائل نمبر', phonePlaceholder: '0300 1234567',
-  sendCode: 'کوڈ بھیجیں', invalidPhone: 'براہِ کرم درست پاکستانی موبائل نمبر درج کریں (03XX XXXXXXX)۔',
+  sendCode: 'SMS پر کوڈ بھیجیں', sendWhatsApp: 'واٹس ایپ پر کوڈ بھیجیں', sendSmsInstead: 'واٹس ایپ نہیں؟ SMS پر بھیجیں',
+  verifyHelpWa: 'ہم نے {phone} پر واٹس ایپ کے ذریعے 6 ہندسوں کا کوڈ بھیجا ہے۔', invalidPhone: 'براہِ کرم درست پاکستانی موبائل نمبر درج کریں (03XX XXXXXXX)۔',
   verifyTitle: 'کوڈ درج کریں', verifyHelp: 'ہم نے {phone} پر 6 ہندسوں کا کوڈ بھیجا ہے۔',
   codeLabel: 'تصدیقی کوڈ', verify: 'تصدیق کریں', resend: 'نیا کوڈ بھیجیں', changeNumber: 'نمبر تبدیل کریں',
   invalidCode: 'کوڈ درست نہیں یا اس کی مدت ختم ہو گئی ہے۔',

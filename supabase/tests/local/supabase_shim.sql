@@ -14,11 +14,13 @@ end $$;
 create schema if not exists extensions;
 grant usage on schema extensions to anon, authenticated, service_role;
 
--- Supabase's default grants on the public schema (RLS is what protects data)
+-- Supabase's default privileges for objects that migrations (role postgres) create
+-- in "public", as observed on a hosted project in Nov 2026: API roles get NO
+-- select/insert/update/delete, no sequence usage and no function execute by
+-- default; migrations must grant explicitly. (Older projects auto-granted all.)
 grant usage on schema public to anon, authenticated, service_role;
-alter default privileges in schema public grant all on tables    to anon, authenticated, service_role;
-alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
-alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+alter default privileges in schema public grant truncate, references, trigger on tables to anon, authenticated, service_role;
+alter default privileges in schema public revoke execute on functions from public;
 
 -- ---------------------------------------------------------------- auth ----
 create schema if not exists auth;

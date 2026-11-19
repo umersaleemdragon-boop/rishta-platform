@@ -98,6 +98,15 @@ Matchmakers use `admin_top_matches(profile)` to see the best candidates with
 both one-way scores, then `admin_suggest_match()` to send a gold "Bureau
 Suggestion".
 
+## Grants (important for new migrations)
+
+Newer Supabase projects do **not** automatically grant table privileges to the
+API roles. Migration `…1003_explicit_grants.sql` grants exactly what the app
+needs: `authenticated` may read every table (RLS filters the rows) and write
+directly only where an RLS write policy exists; everything else is written via
+RPC functions. **Every new table must get explicit grants in its migration.**
+The local test shim mimics these defaults, so a forgotten grant fails the tests.
+
 ## Error codes returned to the apps
 
 `not_authorized`, `not_found`, `upgrade_required` (hint = `basic`/`premium`),

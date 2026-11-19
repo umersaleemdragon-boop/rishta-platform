@@ -1,0 +1,27 @@
+import './polyfills';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient, processLock } from '@supabase/supabase-js';
+import { AppState, Platform } from 'react-native';
+
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
+const key = process.env.EXPO_PUBLIC_SUPABASE_KEY ?? '';
+
+export const isBackendConfigured = url.startsWith('https://') && key.length > 20;
+
+export const supabase = createClient(isBackendConfigured ? url : 'https://not-configured.invalid', key || 'missing', {
+  auth: {
+    // Web: browser localStorage (default). Native: AsyncStorage.
+    ...(Platform.OS === 'web' ? {} : { storage: AsyncStorage, lock: processLock }),
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
+
+// Native apps: only refresh tokens while the app is in the foreground.
+if (Platform.OS !== 'web') {
+  AppState.addEventListener('change', (state) => {
+    if (state === 'active') supabase.auth.startAutoRefresh();
+    else supabase.auth.stopAutoRefresh();
+  });
+}

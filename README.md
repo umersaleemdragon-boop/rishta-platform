@@ -17,7 +17,7 @@ docs/           Architecture & database documentation
 | Step | | Status |
 |---|---|---|
 | 1 | Database schema & backend | ✅ done |
-| 2 | Auth (phone OTP) & onboarding wizard, web first | next |
+| 2 | Auth (phone OTP) & onboarding wizard, web first | 🔨 built, awaiting Supabase project for live testing |
 | 3 | Admin panel v1 (approvals, payments, import, staff roles) | |
 | 4 | Discovery & matchmaking UI | |
 | 5 | Interests & realtime chat | |
@@ -28,6 +28,22 @@ docs/           Architecture & database documentation
 | 10 | Security review, Android then iOS store release | |
 
 See [`docs/DATABASE.md`](docs/DATABASE.md) for how the backend works.
+
+## Run the member app (web)
+
+```bash
+cp apps/app/.env.example apps/app/.env
+```
+
+Fill in `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY` (Dashboard → Project Settings → API), then:
+
+```bash
+pnpm install
+```
+
+```bash
+pnpm --filter @rishta/app web
+```
 
 ## Run the database tests locally (no Docker needed)
 

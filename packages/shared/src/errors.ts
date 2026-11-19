@@ -18,6 +18,13 @@ export const ERROR_MESSAGES: Record<string, { en: string; ur: string }> = {
   must_be_18_or_older: { en: 'Candidates must be at least 18 years old.', ur: 'امیدوار کی عمر کم از کم 18 سال ہونی چاہیے۔' },
   invalid_state: { en: 'This request has already been handled.', ur: 'اس درخواست پر پہلے ہی کارروائی ہو چکی ہے۔' },
   invalid_input: { en: 'Please check the details and try again.', ur: 'تفصیلات چیک کر کے دوبارہ کوشش کریں۔' },
+  contact_info_in_profile: { en: 'Please remove phone numbers, emails and social links from your profile text. Contacts are shared only with your approval.', ur: 'براہِ کرم پروفائل سے فون نمبر، ای میل اور سوشل لنکس ہٹا دیں۔ رابطہ صرف آپ کی اجازت سے شیئر ہوتا ہے۔' },
+  field_locked: { en: 'This detail can only be changed by the bureau team.', ur: 'یہ معلومات صرف بیورو ٹیم تبدیل کر سکتی ہے۔' },
+  invalid_status_change: { en: 'This change is not allowed.', ur: 'یہ تبدیلی ممکن نہیں۔' },
+  profile_limit_reached: { en: 'You can manage up to 5 profiles.', ur: 'آپ زیادہ سے زیادہ 5 پروفائل بنا سکتے ہیں۔' },
+  invalid_invite: { en: 'This code is not valid, already used, or expired.', ur: 'یہ کوڈ درست نہیں، استعمال ہو چکا ہے یا ختم ہو گیا ہے۔' },
+  too_many_invites: { en: 'You already have 5 unused codes. Cancel one first.', ur: 'آپ کے پاس پہلے ہی 5 غیر استعمال شدہ کوڈ ہیں۔' },
+  guardian_limit_reached: { en: 'A profile can have up to 4 family members with access.', ur: 'ایک پروفائل کو زیادہ سے زیادہ 4 افراد رسائی رکھ سکتے ہیں۔' },
 };
 
 export function errorMessage(err: { message?: string } | null | undefined, lang: 'en' | 'ur' = 'en'): string {

@@ -100,6 +100,9 @@ begin
                          values (auth.uid(), 'Kid', 'male', current_date - interval '15 years') $q$, 'must_be_18_or_older');
   perform test.throws($q$ insert into public.profiles (owner_user_id, first_name, gender, date_of_birth)
                          values (test.id('u_sara'), 'Fake', 'female', '1990-01-01') $q$, 'not_authorized');
+  perform test.throws($q$ update public.profiles set about = 'Call me on 0301 1234567' where id = test.id('ali') $q$, 'contact_info_in_profile');
+  perform test.throws($q$ update public.partner_preferences set notes = 'email ali@example.com' where profile_id = test.id('ali') $q$, 'contact_info_in_profile');
+  update public.profiles set about = 'Software engineer, 2 brothers, living in DHA phase 5.' where id = v_id;
   update public.profile_private set contact_phone = '03011234567', whatsapp_number = '03011234567' where profile_id = v_id;
   update public.partner_preferences set age_min = 22, age_max = 30, sects = '{sunni}', cities = '{lahore}' where profile_id = v_id;
   perform test.logout();
@@ -118,7 +121,20 @@ begin
   update public.profiles set status = 'pending_review' where id = v_id;
   update public.profile_private set contact_phone = '03027654321', whatsapp_number = '03027654321' where profile_id = v_id;
   update public.partner_preferences set age_min = 26, age_max = 34, sects = '{sunni}', sect_is_must = true where profile_id = v_id;
-  insert into public.profile_guardians (profile_id, user_id, relation) values (v_id, test.id('u_mom'), 'mother');
+  -- guardian (wali) linking only via invite code
+  perform test.throws(format('insert into public.profile_guardians (profile_id, user_id, relation) values (%L, %L, %L)',
+                             v_id, test.id('u_stranger'), 'other'), 'row-level security');
+  perform test.save('invite_' || (public.create_guardian_invite(v_id, 'mother') ->> 'code'), v_id);
+  perform test.throws($q$ select public.redeem_guardian_invite((select substr(name, 8) from test.ids where name like 'invite_%')) $q$, 'invalid_invite');
+  perform test.login(test.id('u_stranger'));
+  perform test.throws(format('select public.create_guardian_invite(%L, %L)', v_id, 'other'), 'not_authorized');
+  perform test.throws($q$ select public.redeem_guardian_invite('WRONGCODE') $q$, 'invalid_invite');
+  perform test.login(test.id('u_mom'));
+  assert public.redeem_guardian_invite(lower((select substr(name, 8) from test.ids where name like 'invite_%'))) = v_id, 'mother redeems';
+  assert (select relation from public.list_my_guarded_profiles()) = 'mother', 'guardian sees ward';
+  perform test.login(test.id('u_stranger'));
+  perform test.throws($q$ select public.redeem_guardian_invite((select substr(name, 8) from test.ids where name like 'invite_%')) $q$, 'invalid_invite');
+  perform test.login(test.id('u_sara'));
 
   perform test.login(test.id('u_hina'));
   insert into public.profiles (owner_user_id, first_name, gender, date_of_birth, city, education_level, height_cm, sect)

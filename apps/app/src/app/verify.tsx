@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button, Card, Field, H1, Screen } from '../components/ui';
 import { TopBar } from '../components/TopBar';
 import { useI18n } from '../lib/i18n';
-import { formatPkMobile } from '../lib/phone';
+import { formatPkMobile, otpErrorKey } from '../lib/phone';
 import { supabase } from '../lib/supabase';
 
 export default function Verify() {
@@ -28,7 +28,7 @@ export default function Verify() {
   async function resend() {
     setResent(false);
     const { error: err } = await supabase.auth.signInWithOtp({ phone, options: { channel } });
-    if (err) setError(err.message); else setResent(true);
+    if (err) setError(t(otpErrorKey(err))); else setResent(true);
   }
 
   return (

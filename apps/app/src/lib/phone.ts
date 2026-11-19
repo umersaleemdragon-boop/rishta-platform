@@ -14,3 +14,9 @@ export function formatPkMobile(e164: string): string {
   const m = e164.replace(/^\+?92/, '0');
   return m.length === 11 ? `${m.slice(0, 4)}-${m.slice(4)}` : e164;
 }
+
+// Supabase/SMS provider errors are technical; show members a friendly message.
+export function otpErrorKey(err: { message?: string; status?: number }): 'tooManyAttempts' | 'sendFailed' {
+  console.warn('OTP send failed:', err.message);
+  return err.status === 429 || /rate limit|too many/i.test(err.message ?? '') ? 'tooManyAttempts' : 'sendFailed';
+}

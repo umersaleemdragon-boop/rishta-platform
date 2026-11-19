@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Banner, Button, Card, Field, H1, P, Screen } from '../components/ui';
 import { TopBar } from '../components/TopBar';
 import { useI18n } from '../lib/i18n';
-import { normalizePkMobile } from '../lib/phone';
+import { normalizePkMobile, otpErrorKey } from '../lib/phone';
 import { isBackendConfigured, otpChannels, supabase, type OtpChannel } from '../lib/supabase';
 
 export default function SignIn() {
@@ -19,7 +19,7 @@ export default function SignIn() {
     setError(null); setBusy(channel);
     const { error: err } = await supabase.auth.signInWithOtp({ phone: e164, options: { channel } });
     setBusy(null);
-    if (err) return setError(err.message);
+    if (err) return setError(t(otpErrorKey(err)));
     router.push({ pathname: '/verify', params: { phone: e164, channel } });
   }
 

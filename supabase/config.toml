@@ -1,0 +1,47 @@
+# Supabase CLI configuration (local development).
+# Docs: https://supabase.com/docs/guides/local-development/cli/config
+project_id = "rishta-platform"
+
+[api]
+enabled = true
+port = 54321
+# "private" is deliberately NOT exposed: internal helper functions live there.
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+# Keep in sync with the hosted project (Dashboard -> Settings -> Infrastructure).
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+file_size_limit = "5MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:8081"           # Expo web dev server
+additional_redirect_urls = ["http://localhost:3000"]  # Next.js admin
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.sms]
+enable_signup = true
+enable_confirmations = true
+template = "Your verification code is {{ .Code }}"
+
+# Fixed OTP codes for the demo users in seed.sql (local only).
+[auth.sms.test_otp]
+923000000001 = "123456"
+923001111111 = "123456"
+923002222222 = "123456"
+923003333333 = "123456"
+923004444444 = "123456"

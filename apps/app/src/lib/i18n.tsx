@@ -14,6 +14,12 @@ const en = {
   language: 'اردو',
 
   // auth
+  emailSignInTitle: 'Sign in with your email',
+  emailLabel: 'Email address', emailPlaceholder: 'name@gmail.com',
+  emailHelp: 'We will email you a 6-digit code. No password needed.',
+  sendEmailCode: 'Email me a code', invalidEmail: 'Please enter a valid email address.',
+  usePhoneInstead: 'Use mobile number instead', useEmailInstead: 'Use email instead',
+  verifyHelpEmail: 'We sent a code to {email}. Check your inbox — and the Spam folder.',
   signInTitle: 'Sign in with your mobile number',
   signInHelp: 'We will send you a 6-digit code. No password needed.',
   phoneLabel: 'Mobile number', phonePlaceholder: '0300 1234567',
@@ -100,6 +106,12 @@ const ur: Dict = {
   yes: 'ہاں', no: 'نہیں', any: 'کوئی بھی', must: 'لازمی شرط',
   language: 'English',
 
+  emailSignInTitle: 'اپنی ای میل سے سائن اِن کریں',
+  emailLabel: 'ای میل ایڈریس', emailPlaceholder: 'name@gmail.com',
+  emailHelp: 'ہم آپ کو ای میل پر 6 ہندسوں کا کوڈ بھیجیں گے۔ پاس ورڈ کی ضرورت نہیں۔',
+  sendEmailCode: 'ای میل پر کوڈ بھیجیں', invalidEmail: 'براہِ کرم درست ای میل ایڈریس درج کریں۔',
+  usePhoneInstead: 'موبائل نمبر استعمال کریں', useEmailInstead: 'ای میل استعمال کریں',
+  verifyHelpEmail: 'ہم نے {email} پر کوڈ بھیجا ہے۔ اپنا اِن باکس — اور اسپیم فولڈر — چیک کریں۔',
   signInTitle: 'اپنے موبائل نمبر سے سائن اِن کریں',
   signInHelp: 'ہم آپ کو 6 ہندسوں کا کوڈ بھیجیں گے۔ پاس ورڈ کی ضرورت نہیں۔',
   phoneLabel: 'موبائل نمبر', phonePlaceholder: '0300 1234567',

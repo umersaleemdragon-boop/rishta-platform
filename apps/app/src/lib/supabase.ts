@@ -11,6 +11,11 @@ export type OtpChannel = 'sms' | 'whatsapp';
 export const otpChannels: OtpChannel[] = String(process.env.EXPO_PUBLIC_OTP_CHANNELS ?? 'sms')
   .split(',').map((c: string) => c.trim()).filter((c: string): c is OtpChannel => c === 'sms' || c === 'whatsapp');
 
+// Sign-in methods offered, first = default: "email", or "email,phone".
+export type LoginMethod = 'email' | 'phone';
+export const loginMethods: LoginMethod[] = String(process.env.EXPO_PUBLIC_LOGIN_METHODS ?? 'email')
+  .split(',').map((m: string) => m.trim()).filter((m: string): m is LoginMethod => m === 'email' || m === 'phone');
+
 export const isBackendConfigured = url.startsWith('https://') && key.length > 20;
 
 export const supabase = createClient(isBackendConfigured ? url : 'https://not-configured.invalid', key || 'missing', {

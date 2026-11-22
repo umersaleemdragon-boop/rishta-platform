@@ -67,8 +67,15 @@ select test.save('admin',  '00000000-0000-0000-0000-0000000000a1'), test.save('v
        test.save('u_mom',  '00000000-0000-0000-0000-0000000000b3'), test.save('u_hina',   '00000000-0000-0000-0000-0000000000b4'),
        test.save('u_kamran','00000000-0000-0000-0000-0000000000b5'), test.save('u_stranger','00000000-0000-0000-0000-0000000000b9');
 
+insert into auth.users (id, email, raw_user_meta_data) values ('00000000-0000-0000-0000-0000000000e1', 'family@example.com', '{}');
 do $$ begin
   assert (select count(*) from public.app_users where id = test.id('u_ali')) = 1, 'auth trigger creates app_users row';
+  assert (select email from public.app_users where id = '00000000-0000-0000-0000-0000000000e1') = 'family@example.com', 'email sign-up stored';
+  update auth.users set email = 'new@example.com' where id = '00000000-0000-0000-0000-0000000000e1';
+  assert (select email from public.app_users where id = '00000000-0000-0000-0000-0000000000e1') = 'new@example.com', 'email change mirrored';
+  perform test.login('00000000-0000-0000-0000-0000000000e1');
+  perform test.throws($q$ update public.app_users set email = 'x@y.z' where id = auth.uid() $q$, 'permission denied');
+  perform test.logout();
 end $$;
 
 -- ===================================================== 1. profile creation ===

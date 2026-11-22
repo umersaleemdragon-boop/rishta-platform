@@ -57,8 +57,8 @@ export function Button({ title, onPress, variant = 'primary', disabled, loading,
 type FieldProps = TextInputProps & { label: string; help?: string; error?: string | null; required?: boolean };
 export function Field({ label, help, error, required, style, ...input }: FieldProps) {
   const { t, isRTL } = useI18n();
-  // phone numbers, codes and amounts always read left-to-right, even in Urdu
-  const isNumeric = input.keyboardType === 'phone-pad' || input.keyboardType === 'number-pad';
+  // phone numbers, emails, codes and amounts always read left-to-right, even in Urdu
+  const isNumeric = input.keyboardType === 'phone-pad' || input.keyboardType === 'number-pad' || input.keyboardType === 'email-address';
   return (
     <View style={styles.field}>
       <Text style={[styles.label, isRTL && styles.rtl]}>

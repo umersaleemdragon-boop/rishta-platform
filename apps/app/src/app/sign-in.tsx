@@ -4,7 +4,7 @@ import { TopBar } from '../components/TopBar';
 import { Banner, Button, Card, Field, H1, P, Screen } from '../components/ui';
 import { useI18n } from '../lib/i18n';
 import { normalizePkMobile, otpErrorKey } from '../lib/phone';
-import { isBackendConfigured, loginMethods, otpChannels, supabase, type LoginMethod, type OtpChannel } from '../lib/supabase';
+import { emailRedirectTo, isBackendConfigured, loginMethods, otpChannels, supabase, type LoginMethod, type OtpChannel } from '../lib/supabase';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -22,7 +22,7 @@ export default function SignIn() {
     const addr = email.trim().toLowerCase();
     if (!EMAIL_RE.test(addr)) return setError(t('invalidEmail'));
     setError(null); setBusy('email');
-    const { error: err } = await supabase.auth.signInWithOtp({ email: addr, options: { shouldCreateUser: true } });
+    const { error: err } = await supabase.auth.signInWithOtp({ email: addr, options: { shouldCreateUser: true, emailRedirectTo } });
     setBusy(null);
     if (err) return setError(t(otpErrorKey(err)));
     router.push({ pathname: '/verify', params: { email: addr } });

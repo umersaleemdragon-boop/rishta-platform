@@ -4,7 +4,7 @@ import { TopBar } from '../components/TopBar';
 import { Button, Card, Field, H1, Screen } from '../components/ui';
 import { useI18n } from '../lib/i18n';
 import { formatPkMobile, otpErrorKey } from '../lib/phone';
-import { supabase } from '../lib/supabase';
+import { emailRedirectTo, supabase } from '../lib/supabase';
 
 export default function Verify() {
   const { t } = useI18n();
@@ -32,7 +32,7 @@ export default function Verify() {
   async function resend() {
     setResent(false);
     const { error: err } = email
-      ? await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
+      ? await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo } })
       : await supabase.auth.signInWithOtp({ phone: phone!, options: { channel } });
     if (err) setError(t(otpErrorKey(err))); else setResent(true);
   }

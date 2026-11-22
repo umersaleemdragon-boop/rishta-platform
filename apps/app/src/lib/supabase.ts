@@ -24,7 +24,8 @@ export const supabase = createClient(isBackendConfigured ? url : 'https://not-co
     ...(Platform.OS === 'web' ? {} : { storage: AsyncStorage, lock: processLock }),
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    // Web: also accept the sign-in LINK from the email (session arrives in the URL).
+    detectSessionInUrl: Platform.OS === 'web',
   },
 });
 
@@ -35,3 +36,7 @@ if (Platform.OS !== 'web') {
     else supabase.auth.stopAutoRefresh();
   });
 }
+
+// Where the email sign-in link should land: the site the person is using.
+export const emailRedirectTo =
+  Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.origin : undefined;

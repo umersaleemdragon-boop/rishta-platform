@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Rishta",
-    "slug": "rishta",
+    "name": "Zaujyn",
+    "slug": "zaujyn",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rishtabureau.app"
+      "bundleIdentifier": "com.zaujyn.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +18,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.rishtabureau.app"
+      "package": "com.zaujyn.app"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -28,6 +28,6 @@
     "plugins": [
       "expo-router"
     ],
-    "scheme": "rishta"
+    "scheme": "zaujyn"
   }
 }

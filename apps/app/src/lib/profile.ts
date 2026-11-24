@@ -57,7 +57,37 @@ export function friendlyError(err: { message?: string } | null | undefined, lang
   const known = errorMessage({ message: msg }, lang);
   if (!/Something went wrong|کچھ غلط/.test(known)) return known;
   if (/row-level security|permission denied/.test(msg)) return errorMessage({ message: 'not_authorized' }, lang);
+  const check = /violates check constraint "([^"]+)"/.exec(msg);
+  if (check) return constraintMessage(check[1], lang);
+  if (/value too long/.test(msg)) return lang === 'ur' ? 'ایک خانے میں متن بہت لمبا ہے۔ براہِ کرم مختصر کریں۔' : 'One of the texts is too long. Please shorten it.';
   return known;
+}
+
+// Database rules (check constraints) -> what the person should fix.
+const CONSTRAINT_MESSAGES: [RegExp, { en: string; ur: string }][] = [
+  [/age_m(in|ax)|preferences_check$/, { en: 'Partner age must be between 18 and 80, and "From" cannot be more than "To".', ur: 'رشتے کی عمر 18 سے 80 کے درمیان ہو، اور "سے" کی عمر "تک" سے زیادہ نہ ہو۔' }],
+  [/height/, { en: 'Height must be between 4 ft and 7 ft 6 in, and "From" cannot be more than "To".', ur: 'قد 4 فٹ سے 7 فٹ 6 انچ کے درمیان ہو، اور "سے" کا قد "تک" سے زیادہ نہ ہو۔' }],
+  [/children_count/, { en: 'Please check the number of children.', ur: 'بچوں کی تعداد چیک کریں۔' }],
+  [/brothers|sisters|siblings/, { en: 'Please check the number of brothers / sisters.', ur: 'بہن بھائیوں کی تعداد چیک کریں۔' }],
+  [/income/, { en: 'Please check the monthly income.', ur: 'ماہانہ آمدنی چیک کریں۔' }],
+  [/first_name/, { en: 'Please check the first name (1–60 letters).', ur: 'پہلا نام چیک کریں (1 سے 60 حروف)۔' }],
+];
+function constraintMessage(name: string, lang: Lang) {
+  const hit = CONSTRAINT_MESSAGES.find(([re]) => re.test(name));
+  if (hit) return hit[1][lang];
+  return lang === 'ur' ? `ایک معلومات درست نہیں (${name})۔ براہِ کرم چیک کریں۔` : `One of the details is not accepted (${name}). Please check what you entered.`;
+}
+
+// Map a typed / chosen value onto the lookup list ("Lahore" -> "lahore");
+// unknown values are kept as typed (Title Case). Returns 'other' if Other was
+// chosen but nothing typed.
+export function normalizeLookup(v: string | null | undefined, options: { value: string; label: string }[]): string | null {
+  const t = (v ?? '').trim().replace(/\s+/g, ' ');
+  if (!t) return null;
+  const low = t.toLowerCase();
+  const hit = options.find((o) => o.value === low || o.label.toLowerCase() === low);
+  if (hit) return hit.value;
+  return t.replace(/(^|\s)(\S)/g, (_m, sp: string, c: string) => sp + c.toUpperCase());
 }
 
 // --- height helpers ---

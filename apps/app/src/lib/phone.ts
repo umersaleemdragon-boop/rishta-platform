@@ -20,3 +20,12 @@ export function otpErrorKey(err: { message?: string; status?: number }): 'tooMan
   console.warn('OTP send failed:', err.message);
   return err.status === 429 || /rate limit|too many/i.test(err.message ?? '') ? 'tooManyAttempts' : 'sendFailed';
 }
+
+// Pakistani mobile (any common format) or an international number (+44…, 0044…).
+export function normalizeAnyMobile(input: string): string | null {
+  const pk = normalizePkMobile(input);
+  if (pk) return pk;
+  const raw = input.trim().replace(/[\s\-().]/g, '');
+  const intl = raw.startsWith('+') ? raw.slice(1) : raw.startsWith('00') ? raw.slice(2) : null;
+  return intl && /^[1-9]\d{7,14}$/.test(intl) ? `+${intl}` : null;
+}

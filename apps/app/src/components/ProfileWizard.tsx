@@ -4,15 +4,15 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../lib/auth';
 import { ENUM_LABELS, useI18n, type TKey } from '../lib/i18n';
 import { useLookups } from '../lib/lookups';
-import { normalizePkMobile } from '../lib/phone';
+import { normalizeAnyMobile } from '../lib/phone';
 import {
-  buildDob, cmToFtIn, EDITABLE_PROFILE_FIELDS, friendlyError, ftInToCm, loadProfileBundle, pick, toInt,
+  buildDob, cmToFtIn, EDITABLE_PROFILE_FIELDS, friendlyError, ftInToCm, loadProfileBundle, normalizeLookup, pick, toInt,
   type Preferences, type PrivateDetails, type Profile,
 } from '../lib/profile';
 import { supabase } from '../lib/supabase';
 import { colors, radius, space } from '../lib/theme';
 import { TopBar } from './TopBar';
-import { Banner, Button, Card, ChipSelect, Field, H1, Loading, MultiChipSelect, P, Row, Screen, YesNo } from './ui';
+import { Banner, Button, Card, ChipSelect, Field, H1, Loading, LookupSelect, MultiChipSelect, P, Row, Screen, YesNo } from './ui';
 
 const STEPS = ['basics', 'community', 'education', 'location', 'family', 'preferences', 'review'] as const;
 type Step = (typeof STEPS)[number];
@@ -32,6 +32,7 @@ export function ProfileWizard({ profileId, initialStep = 0 }: { profileId?: stri
   const [prefs, setPrefs] = useState<Partial<Preferences>>({ marital_statuses: [], sects: [], castes: [], cities: [], mother_tongues: [] });
   const [dob, setDob] = useState({ d: '', m: '', y: '' });
   const [height, setHeight] = useState({ ft: '', inch: '' });
+  const [prefH, setPrefH] = useState({ minFt: '', minIn: '', maxFt: '', maxIn: '' });
   const [num, setNum] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -44,6 +45,8 @@ export function ProfileWizard({ profileId, initialStep = 0 }: { profileId?: stri
       const [y, m, d] = profile.date_of_birth.split('-');
       setDob({ d: String(+d), m: String(+m), y });
       setHeight(cmToFtIn(profile.height_cm));
+      const lo = cmToFtIn(pf?.height_min_cm), hi = cmToFtIn(pf?.height_max_cm);
+      setPrefH({ minFt: lo.ft, minIn: lo.inch, maxFt: hi.ft, maxIn: hi.inch });
       setNum({
         children_count: s(profile.children_count), monthly_income_pkr: s(profile.monthly_income_pkr),
         brothers_count: s(profile.brothers_count), sisters_count: s(profile.sisters_count), married_siblings: s(profile.married_siblings),
@@ -93,22 +96,33 @@ export function ProfileWizard({ profileId, initialStep = 0 }: { profileId?: stri
           }
           return true;
         }
-        case 'community':
+        case 'community': {
+          const sect = normalizeLookup(p.sect, lookupOptions('sect', 'en'));
+          const caste = normalizeLookup(p.caste, lookupOptions('caste', 'en'));
+          const tongue = normalizeLookup(p.mother_tongue, lookupOptions('mother_tongue', 'en'));
           if (!p.sect) return fail('fillRequired');
-          await updateProfile({ sect: p.sect, caste: p.caste ?? null, mother_tongue: p.mother_tongue ?? null,
+          if (sect === 'other') return fail('typeOtherRequired');
+          await updateProfile({ sect, caste, mother_tongue: tongue,
             religiosity: p.religiosity ?? null, is_hafiz: !!p.is_hafiz });
+          setP((x) => ({ ...x, sect, caste, mother_tongue: tongue }));
           return true;
+        }
         case 'education':
           if (!p.education_level) return fail('fillRequired');
           await updateProfile({ education_level: p.education_level, degree_title: p.degree_title?.trim() || null,
             institution: p.institution?.trim() || null, profession: p.profession?.trim() || null,
             monthly_income_pkr: toInt(num.monthly_income_pkr ?? '') });
           return true;
-        case 'location':
-          if (!p.city) return fail('fillRequired');
-          await updateProfile({ city: p.city, country: p.country ?? 'pakistan', willing_to_relocate: !!p.willing_to_relocate,
+        case 'location': {
+          const city = normalizeLookup(p.city, lookupOptions('city', 'en'));
+          const country = normalizeLookup(p.country, lookupOptions('country', 'en')) ?? 'pakistan';
+          if (!city) return fail('fillRequired');
+          if (city === 'other' || country === 'other') return fail('typeOtherRequired');
+          await updateProfile({ city, country, willing_to_relocate: !!p.willing_to_relocate,
             smokes: p.smokes ?? null, about: p.about?.trim() || null });
+          setP((x) => ({ ...x, city, country }));
           return true;
+        }
         case 'family':
           await updateProfile({
             father_occupation: p.father_occupation?.trim() || null, mother_occupation: p.mother_occupation?.trim() || null,
@@ -120,8 +134,11 @@ export function ProfileWizard({ profileId, initialStep = 0 }: { profileId?: stri
           return true;
         case 'preferences': {
           const ageMin = toInt(num.age_min ?? ''), ageMax = toInt(num.age_max ?? '');
-          const hMin = toInt(num.height_min_cm ?? ''), hMax = toInt(num.height_max_cm ?? '');
-          if ((ageMin && ageMax && ageMin > ageMax) || (hMin && hMax && hMin > hMax)) return fail('fillRequired');
+          const badAge = (a: number | null) => a !== null && (a < 18 || a > 80);
+          if (badAge(ageMin) || badAge(ageMax) || (ageMin && ageMax && ageMin > ageMax)) return fail('ageRangeInvalid');
+          const hMin = prefH.minFt ? ftInToCm(prefH.minFt, prefH.minIn) : null;
+          const hMax = prefH.maxFt ? ftInToCm(prefH.maxFt, prefH.maxIn) : null;
+          if ((prefH.minFt && !hMin) || (prefH.maxFt && !hMax) || (hMin && hMax && hMin > hMax)) return fail('heightRangeInvalid');
           const { error: err } = await supabase.from('partner_preferences').update({
             age_min: ageMin, age_max: ageMax, height_min_cm: hMin, height_max_cm: hMax,
             marital_statuses: prefs.marital_statuses ?? [], education_min: prefs.education_min ?? null,
@@ -134,8 +151,10 @@ export function ProfileWizard({ profileId, initialStep = 0 }: { profileId?: stri
           return true;
         }
         case 'review': {
-          const phone = priv.contact_phone?.trim() ? normalizePkMobile(priv.contact_phone) ?? priv.contact_phone.trim() : null;
-          const wa = priv.whatsapp_number?.trim() ? normalizePkMobile(priv.whatsapp_number) ?? priv.whatsapp_number.trim() : null;
+          const phone = normalizeAnyMobile(priv.contact_phone ?? '');
+          if (!phone) return fail('invalidMobile');
+          const wa = priv.whatsapp_number?.trim() ? normalizeAnyMobile(priv.whatsapp_number) : phone;
+          if (!wa) return fail('invalidMobile');
           const { error: err } = await supabase.from('profile_private')
             .update({ last_name: priv.last_name?.trim() || null, contact_phone: phone, whatsapp_number: wa }).eq('profile_id', id!);
           if (err) throw err;
@@ -220,9 +239,9 @@ export function ProfileWizard({ profileId, initialStep = 0 }: { profileId?: stri
 
         {step === 'community' && (
           <>
-            <ChipSelect label={t('sect')} options={lookupOptions('sect', lang)} value={p.sect} onChange={set('sect')} required />
-            <ChipSelect label={t('caste')} options={lookupOptions('caste', lang)} value={p.caste} onChange={set('caste')} />
-            <ChipSelect label={t('motherTongue')} options={lookupOptions('mother_tongue', lang)} value={p.mother_tongue} onChange={set('mother_tongue')} />
+            <LookupSelect label={t('sect')} otherLabel={t('otherSect')} options={lookupOptions('sect', lang)} value={p.sect} onChange={set('sect')} required />
+            <LookupSelect label={t('caste')} otherLabel={t('otherCaste')} options={lookupOptions('caste', lang)} value={p.caste} onChange={set('caste')} />
+            <LookupSelect label={t('motherTongue')} otherLabel={t('otherTongue')} options={lookupOptions('mother_tongue', lang)} value={p.mother_tongue} onChange={set('mother_tongue')} />
             <ChipSelect label={t('religiosity')} options={enumOptions('religiosity')} value={p.religiosity} onChange={set('religiosity')} />
             <YesNo label={t('hafiz')} value={p.is_hafiz} onChange={set('is_hafiz')} />
           </>
@@ -240,8 +259,8 @@ export function ProfileWizard({ profileId, initialStep = 0 }: { profileId?: stri
 
         {step === 'location' && (
           <>
-            <ChipSelect label={t('city')} options={lookupOptions('city', lang)} value={p.city} onChange={set('city')} required />
-            <ChipSelect label={t('country')} options={lookupOptions('country', lang)} value={p.country} onChange={(v) => set('country')(v ?? 'pakistan')} />
+            <LookupSelect label={t('city')} otherLabel={t('otherCity')} options={lookupOptions('city', lang)} value={p.city} onChange={set('city')} required testID="city" />
+            <LookupSelect label={t('country')} otherLabel={t('otherCountry')} options={lookupOptions('country', lang)} value={p.country} onChange={(v) => set('country')(v ?? 'pakistan')} />
             <YesNo label={t('relocate')} value={p.willing_to_relocate} onChange={set('willing_to_relocate')} />
             <YesNo label={t('smokes')} value={p.smokes} onChange={set('smokes')} />
             <Field label={t('about')} value={p.about ?? ''} onChangeText={set('about')} help={t('aboutHelp')} multiline maxLength={2000} />
@@ -268,15 +287,21 @@ export function ProfileWizard({ profileId, initialStep = 0 }: { profileId?: stri
 
         {step === 'preferences' && (
           <>
-            <Text style={styles.label}>{t('prefAge')}</Text>
+            <Text style={styles.label}>{t('prefAge')} (18–80)</Text>
             <Row>
               <View style={styles.dateYear}>{numField('age_min', 'from', { max: 2 })}</View>
               <View style={styles.dateYear}>{numField('age_max', 'to', { max: 2 })}</View>
             </Row>
             <Text style={styles.label}>{t('prefHeight')}</Text>
             <Row>
-              <View style={styles.dateYear}>{numField('height_min_cm', 'from', { max: 3 })}</View>
-              <View style={styles.dateYear}>{numField('height_max_cm', 'to', { max: 3 })}</View>
+              <View style={styles.dateDay}><Field label={`${t('from')} (${t('feet')})`} value={prefH.minFt} keyboardType="number-pad" maxLength={1}
+                onChangeText={(v) => setPrefH({ ...prefH, minFt: v.replace(/\D/g, '') })} /></View>
+              <View style={styles.dateDay}><Field label={t('inches')} value={prefH.minIn} keyboardType="number-pad" maxLength={2}
+                onChangeText={(v) => setPrefH({ ...prefH, minIn: v.replace(/\D/g, '') })} /></View>
+              <View style={styles.dateDay}><Field label={`${t('to')} (${t('feet')})`} value={prefH.maxFt} keyboardType="number-pad" maxLength={1}
+                onChangeText={(v) => setPrefH({ ...prefH, maxFt: v.replace(/\D/g, '') })} /></View>
+              <View style={styles.dateDay}><Field label={t('inches')} value={prefH.maxIn} keyboardType="number-pad" maxLength={2}
+                onChangeText={(v) => setPrefH({ ...prefH, maxIn: v.replace(/\D/g, '') })} /></View>
             </Row>
             <MultiChipSelect label={t('prefMarital')} options={enumOptions('marital_status')} values={prefs.marital_statuses ?? []} onChange={setPref('marital_statuses')} />
             <ChipSelect label={t('prefEducation')} options={enumOptions('education_level')} value={prefs.education_min} onChange={setPref('education_min')} />
@@ -298,10 +323,10 @@ export function ProfileWizard({ profileId, initialStep = 0 }: { profileId?: stri
             <Text style={styles.sectionTitle}>🔒 {t('privateDetails')}</Text>
             <P muted>{t('privateHelp')}</P>
             <Field label={t('lastName')} value={priv.last_name ?? ''} onChangeText={(v) => setPriv({ ...priv, last_name: v })} maxLength={60} />
-            <Field label={t('contactPhone')} value={priv.contact_phone ?? ''} onChangeText={(v) => setPriv({ ...priv, contact_phone: v })}
-              keyboardType="phone-pad" maxLength={20} placeholder="03XX XXXXXXX" />
+            <Field label={t('contactPhone')} required value={priv.contact_phone ?? ''} onChangeText={(v) => setPriv({ ...priv, contact_phone: v })}
+              keyboardType="phone-pad" maxLength={20} placeholder="03XX XXXXXXX" help={t('contactPhoneHelp')} testID="contact-phone" />
             <Field label={t('whatsapp')} value={priv.whatsapp_number ?? ''} onChangeText={(v) => setPriv({ ...priv, whatsapp_number: v })}
-              keyboardType="phone-pad" maxLength={20} placeholder="03XX XXXXXXX" />
+              keyboardType="phone-pad" maxLength={20} placeholder="03XX XXXXXXX" help={t('whatsappHelp')} />
             <ChipSelect label={t('whoCanContact')} options={enumOptions('contact_policy')} value={p.contact_policy}
               onChange={(v) => set('contact_policy')(v ?? 'anyone')} required />
             <Banner>{t('photosLater')}</Banner>
@@ -309,6 +334,7 @@ export function ProfileWizard({ profileId, initialStep = 0 }: { profileId?: stri
         )}
       </Card>
 
+      {error && <Banner kind="error">{error}</Banner>}
       {submitted && <Banner kind="success">{t('submitted')}</Banner>}
 
       <Row>

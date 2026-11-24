@@ -131,6 +131,26 @@ export function MultiChipSelect({ label, options, values, onChange, help }: {
   );
 }
 
+// Chips from a lookup list + "Other": choosing Other opens a box to type any value.
+export function LookupSelect({ label, otherLabel, options, value, onChange, required, testID }: {
+  label: string; otherLabel: string; options: Option[]; value: string | null | undefined;
+  onChange: (v: string | null) => void; required?: boolean; testID?: string;
+}) {
+  const hasOther = options.some((o) => o.value === 'other');
+  const known = !value || options.some((o) => o.value === value);
+  const chip = options.length === 0 ? value : known ? value : hasOther ? 'other' : null;
+  const custom = known ? '' : (value ?? '');
+  return (
+    <View style={styles.field}>
+      <ChipSelect label={label} options={options} value={chip} onChange={onChange} required={required} />
+      {chip === 'other' && (
+        <Field label={otherLabel} required={required} value={custom} maxLength={60} autoCapitalize="words"
+          onChangeText={(txt) => onChange(txt.length ? txt : 'other')} testID={testID ? `${testID}-other` : undefined} />
+      )}
+    </View>
+  );
+}
+
 export function YesNo({ label, value, onChange }: { label: string; value: boolean | null | undefined; onChange: (v: boolean) => void }) {
   const { t } = useI18n();
   return (

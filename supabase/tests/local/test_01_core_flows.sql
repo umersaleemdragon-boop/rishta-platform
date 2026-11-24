@@ -570,11 +570,14 @@ begin
 
   perform test.login(test.id('u_ali'));
   perform test.throws($q$ select public.admin_dashboard_stats() $q$, 'not_authorized');
+  perform test.throws($q$ select public.admin_reveal_contact(test.id('sara')) $q$, 'not_authorized');
   perform test.throws($q$ select public.run_daily_maintenance() $q$, 'not_authorized');
   assert (select count(*) from public.audit_log) = 0, 'users cannot read audit log';
   perform test.login(test.id('admin'));
   v := public.admin_dashboard_stats();
   assert (v ->> 'rishtas_confirmed_total')::int = 1, 'stats: ' || v::text;
+  assert (public.admin_reveal_contact(test.id('sara')) ->> 'contact_phone') = '03027654321', 'staff can reveal contact';
+  assert exists (select 1 from public.audit_log where action = 'contact_viewed_by_staff'), 'staff reveal is logged';
   assert (select count(*) from public.audit_log) > 10, 'audit trail recorded';
   perform test.logout();
 end $$;

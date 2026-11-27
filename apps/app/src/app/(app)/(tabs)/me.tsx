@@ -85,6 +85,12 @@ export default function Me() {
             <View style={{ flexGrow: 1 }}><Button title={p.status === 'draft' ? t('continueProfile') : t('edit')} onPress={() => router.push(`/profile/${p.id}/edit`)} /></View>
             <View style={{ flexGrow: 1 }}><Button title={t('manageGuardians')} variant="secondary" onPress={() => router.push(`/profile/${p.id}/guardians`)} /></View>
           </Row>
+          <Row>
+            <View style={{ flexGrow: 1 }}><Button title={t('myPhotos')} variant="secondary" onPress={() => router.push(`/profile/${p.id}/photos`)} /></View>
+            {p.verification_level !== 'cnic' && p.verification_level !== 'bureau' && (
+              <View style={{ flexGrow: 1 }}><Button title={t('getVerified')} variant="secondary" onPress={() => router.push(`/profile/${p.id}/verify`)} /></View>
+            )}
+          </Row>
           {profiles.length > 1 && active?.id !== p.id && (
             <Button title={`${t('activeProfile')}: ${p.first_name}`} variant="ghost" onPress={() => setActiveId(p.id)} />
           )}

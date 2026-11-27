@@ -22,7 +22,7 @@ export default function Dashboard() {
     { label: 'Profiles to approve', value: n('profiles_pending_review'), href: '/admin/approvals' },
     { label: 'CNIC checks', value: n('verifications_pending'), href: '/admin/verifications' },
     { label: 'Payments to verify', value: n('payments_pending'), href: '/admin/payments' },
-    { label: 'Photos to review', value: n('photos_pending'), href: '/admin/members' },
+    { label: 'Photos to review', value: n('photos_pending'), href: '/admin/photos' },
     { label: 'Open reports', value: n('reports_open'), href: '/admin/members' },
   ];
   const facts = [

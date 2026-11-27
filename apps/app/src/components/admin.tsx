@@ -10,6 +10,7 @@ export const NAV: { href: string; label: string; icon: IconName; roles: string[]
   { href: '/admin', label: 'Dashboard', icon: 'grid-outline', roles: ['super_admin', 'verifier', 'matchmaker', 'accountant'] },
   { href: '/admin/approvals', label: 'Approvals', icon: 'checkmark-done-outline', roles: ['super_admin', 'verifier'] },
   { href: '/admin/verifications', label: 'CNIC checks', icon: 'card-outline', roles: ['super_admin', 'verifier'] },
+  { href: '/admin/photos', label: 'Photo checks', icon: 'images-outline', roles: ['super_admin', 'verifier'] },
   { href: '/admin/payments', label: 'Payments', icon: 'cash-outline', roles: ['super_admin', 'accountant'] },
   { href: '/admin/members', label: 'All members', icon: 'people-outline', roles: ['super_admin', 'verifier', 'matchmaker', 'accountant'] },
   { href: '/admin/import', label: 'WhatsApp import', icon: 'cloud-upload-outline', roles: ['super_admin', 'matchmaker'] },

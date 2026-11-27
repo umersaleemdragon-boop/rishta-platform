@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Icon, Sheet, Tag, type IconName } from '../../../components/kit';
+import { PhotoViewer } from '../../../components/PhotoViewer';
 import { Banner, Button, ChipSelect, Field, Row } from '../../../components/ui';
 import { ENUM_LABELS, useI18n, type TKey } from '../../../lib/i18n';
 import { friendlyError } from '../../../lib/profile';
@@ -30,6 +31,7 @@ export default function Chat() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [sheet, setSheet] = useState<'meeting' | 'more' | 'contact' | null>(null);
+  const [viewPhotos, setViewPhotos] = useState(false);
   const [meetType, setMeetType] = useState<string | null>('in_person_family');
   const [meetWhen, setMeetWhen] = useState('');
   const [meetWhere, setMeetWhere] = useState('');
@@ -42,9 +44,9 @@ export default function Chat() {
     if (!conv) return null;
     const ids = [conv.profile_a, conv.profile_b];
     const own = profiles.find((p) => ids.includes(p.id));
-    if (own) return { id: own.id, readOnly: false };
+    if (own) return { id: own.id, code: own.public_code, readOnly: false };
     const g = guarded.find((x) => ids.includes(x.profile_id));
-    return g ? { id: g.profile_id, readOnly: true } : null;
+    return g ? { id: g.profile_id, code: g.public_code, readOnly: true } : null;
   }, [conv, profiles, guarded]);
 
   const loadSide = useCallback(async () => {
@@ -210,7 +212,7 @@ export default function Chat() {
           ))}
           {theirPhotosToMe && (
             <ActionCard icon="image-outline" title={t('photos')}>
-              <Text style={styles.cardText}>{t('sys_photo_request_approved')} — {lang === 'ur' ? 'تصاویر دیکھنے کی سہولت اگلی اپڈیٹ میں۔' : 'the protected photo viewer arrives in the next update.'}</Text>
+              <Button title={t('viewPhotos')} onPress={() => setViewPhotos(true)} />
             </ActionCard>
           )}
           {contactToMe && <Button title={t('viewContact')} variant="secondary" onPress={showContact} />}
@@ -242,6 +244,11 @@ export default function Chat() {
           </View>
         )}
       </View>
+
+      {other && theirPhotosToMe && (
+        <PhotoViewer open={viewPhotos} onClose={() => setViewPhotos(false)} owner={other.id} viewer={me.id}
+          viewerCode={me.code} title={`${t('photos')} · ${other.name}`} />
+      )}
 
       <Sheet open={sheet === 'meeting'} onClose={() => setSheet(null)} title={t('propose')}>
         <ChipSelect label={t('meetingTitle')} value={meetType} onChange={setMeetType} required

@@ -8,3 +8,6 @@ dist/
 supabase/.branches
 supabase/.temp
 .DS_Store
+
+# research working notes (not published)
+research_notes/

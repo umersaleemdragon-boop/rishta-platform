@@ -14,6 +14,8 @@ export type Profile = {
   father_occupation: string | null; mother_occupation: string | null; brothers_count: number; sisters_count: number;
   married_siblings: number; family_type: string | null; house_ownership: string | null; house_size: string | null;
   socioeconomic_class: string | null; family_about: string | null; contact_policy: string;
+  // staff-visible bookkeeping
+  source?: string; listing_consent?: boolean; legacy_ref?: string | null; approved_at?: string | null; updated_at?: string; created_at?: string;
 };
 
 export type PrivateDetails = { profile_id: string; last_name: string | null; contact_phone: string | null; whatsapp_number: string | null };
